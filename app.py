@@ -64,6 +64,7 @@ def register():
         except ValueError:
             return jsonify({"error": "Could not add user"}), 400
 
+#login endpoint
 @app.route('/login', methods = ['POST'])
 def login():
-    return 
+    return
