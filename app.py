@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
 import datetime
 import os
 import string
@@ -63,8 +64,22 @@ def register():
             return jsonify({'message': f"{user_name} created"}), 201
         except ValueError:
             return jsonify({"error": "Could not add user"}), 400
+    
 
 #login endpoint
 @app.route('/login', methods = ['POST'])
 def login():
-    return
+    data = request.get_json()
+
+    if not data or 'username' not in data or 'password' not in data:
+         return jsonify({"error": "Provide requested information"}), 400 #sending data as json
+    
+    user_name = data['username']
+    raw_password = data['password']
+
+    user = User.query.filter_by(username=user_name).first()
+    if not user or not check_password_hash(User.password_hash, raw_password):
+        return jsonify({"error": "Provided username or password is not correct"}), 400
+
+    token = jwt.encode({'public_id': User.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)},app.config['SECRET_KEY'], algorithm="HS256")
+
