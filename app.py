@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for
+from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -83,4 +84,29 @@ def login():
 
     token = jwt.encode({'public_id': user.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)},app.config['SECRET_KEY'], algorithm="HS256")
     return jsonify({"message": "Login successful", "token": token}), 200
+#work in progress----------------------------------
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        
+        auth_request = request.headers.get("Authorization")
+        if auth_request:
+            return jsonify({"error": "Missing token"}), 401
+        try:
+            token = bearer.split()[1]
+        except IndexError:
+            return jsonify({"error": "Invalid token format"})
+#finish it!!!        
+        try:
+            token = jwt.decode()
+        except:
+            return
 
+        return f(*args, **kwargs)
+    return decorated
+
+@app.route('/generate-password', methods = ['POST'])
+@token_required
+def generate_password():
+
+    return
