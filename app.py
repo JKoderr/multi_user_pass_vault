@@ -82,7 +82,7 @@ def login():
     if not user or not check_password_hash(user.password_hash, raw_password):
         return jsonify({"error": "Provided username or password is not correct"}), 400
 
-    token = jwt.encode({'public_id': user.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)},app.config['SECRET_KEY'], algorithm="HS256")
+    token = jwt.encode({'public_id': user.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)}, app.config['SECRET_KEY'], algorithm="HS256")
     return jsonify({"message": "Login successful", "token": token}), 200
 #work in progress----------------------------------
 def token_required(f):
@@ -93,12 +93,12 @@ def token_required(f):
         if auth_request:
             return jsonify({"error": "Missing token"}), 401
         try:
-            token = bearer.split()[1]
+            token = auth_request.split()[1]
         except IndexError:
             return jsonify({"error": "Invalid token format"})
 #finish it!!!        
         try:
-            token = jwt.decode()
+            decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithm="HS256")
         except:
             return
 
