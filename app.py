@@ -78,8 +78,9 @@ def login():
     raw_password = data['password']
 
     user = User.query.filter_by(username=user_name).first()
-    if not user or not check_password_hash(User.password_hash, raw_password):
+    if not user or not check_password_hash(user.password_hash, raw_password):
         return jsonify({"error": "Provided username or password is not correct"}), 400
 
-    token = jwt.encode({'public_id': User.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)},app.config['SECRET_KEY'], algorithm="HS256")
+    token = jwt.encode({'public_id': user.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)},app.config['SECRET_KEY'], algorithm="HS256")
+    return jsonify({"message": "Login successful", "token": token}), 200
 
