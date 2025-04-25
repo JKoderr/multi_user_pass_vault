@@ -76,12 +76,13 @@ def register():
         try:
 #creating new user
             new_user = User(username=user_name, 
-                            password_hash=generate_password_hash(raw_password, method='sha256'))
+                            password_hash=generate_password_hash(raw_password))
             db.session.add(new_user)
             db.session.commit()
             return jsonify({'message': f"{user_name} created"}), 201
-        except ValueError:
-            return jsonify({"error": "Could not add user"}), 400
+        except Exception as e:
+            return jsonify({"error": f"Could not add user: {str(e)}"}), 400
+
     
 
 #login endpoint
@@ -163,4 +164,27 @@ def generate_password(user):
     db.session.commit()
 
     return jsonify({"status": "success", "Time": current_time.strftime("%Y-%m-%d %H:%M"), "password": password, "service": input_service}), 201
+
+#password showing function
+@app.route('/get-passwords', methods = ['POST'])
+@token_required #verification decorator
+def get_passwords(user):
+    key = load_create_key()#creating or using existing key
+    cipher = Fernet(key)
+    passwords = []
+    entries = PasswordEntry.query.filter_by(user_id=user.id).all()
+
+    for entry in entries:    
+           decrypted_password = cipher.decrypt(entry.plain_password).decode()#decrypting password      
+           passwords.append({
+                "timestamp": entry.timestamp.strftime("%Y-%m-%d %H:%M"),
+                "service": PasswordEntry.service,
+                "password": decrypted_password
+                })
     
+
+    return jsonify({"Your data": passwords}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
