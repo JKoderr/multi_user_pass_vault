@@ -59,7 +59,8 @@ def register():
     else:    
         try:
 #creating new user
-            new_user = User(username=user_name, password_hash=generate_password_hash(raw_password, method='sha256'))
+            new_user = User(username=user_name, 
+                            password_hash=generate_password_hash(raw_password, method='sha256'))
             db.session.add(new_user)
             db.session.commit()
             return jsonify({'message': f"{user_name} created"}), 201
@@ -82,7 +83,10 @@ def login():
     if not user or not check_password_hash(user.password_hash, raw_password):
         return jsonify({"error": "Provided username or password is not correct"}), 400
 
-    token = jwt.encode({'public_id': user.id, 'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)}, app.config['SECRET_KEY'], algorithm="HS256")
+    token = jwt.encode({'public_id': user.id, 
+                        'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)}, 
+                        app.config['SECRET_KEY'], 
+                        algorithm="HS256")
     return jsonify({"message": "Login successful", "token": token}), 200
 #work in progress----------------------------------
 def token_required(f):
@@ -91,16 +95,25 @@ def token_required(f):
         
         auth_request = request.headers.get("Authorization")
         if auth_request:
+            try:
+               token = auth_request.split()[1]
+            except IndexError:
+                return jsonify({"error": "Invalid token format"})
+        else:
             return jsonify({"error": "Missing token"}), 401
-        try:
-            token = auth_request.split()[1]
-        except IndexError:
-            return jsonify({"error": "Invalid token format"})
 #finish it!!!        
         try:
-            decoded = jwt.decode(token, app.config['SECRET_KEY'], algorithm="HS256")
-        except:
-            return
+            decoded = jwt.decode(token, 
+                                 app.config['SECRET_KEY'], 
+                                 options={"verify_exp": True}, 
+                                 algorithm="HS256")
+            
+            user = User.query.get(decoded['public_id'])
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Expired"})
 
         return f(*args, **kwargs)
     return decorated
