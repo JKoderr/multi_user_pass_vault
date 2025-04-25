@@ -3,10 +3,12 @@ from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
+from cryptography.fernet import Fernet
 import jwt
 import datetime
-import os
+import random
 import string
+import os
 
 
 #initializing Flask
@@ -19,6 +21,7 @@ app.config['SECRET_KEY'] = 'supersecret1234'
 
 #initializing database
 db = SQLAlchemy(app)
+
 
 #User and password classes
 class User(db.Model):
@@ -35,6 +38,19 @@ class PasswordEntry(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref=db.backref('passwords', lazy=True))
 
+def pass_gen(size, chars=string.ascii_letters + string.digits + string.punctuation):
+        return ''.join(random.choice(chars) for _ in range(size))
+
+def load_create_key():
+    if os.path.exists("key.key"):
+        with open("key.key", "rb") as key_file:
+            return key_file.read()
+    else:
+        key = Fernet.generate_key()
+        with open("key.key", "wb") as key_file:  
+            key_file.write(key)
+        return key
+
 #default endpoint path 
 @app.route('/', methods = ['GET'])
 def home():
@@ -43,7 +59,7 @@ def home():
 #registering endpoint
 @app.route('/register', methods = ['POST'])
 def register():
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    
     data = request.get_json()
 #checking if data provided is valid
     if not data or 'username' not in data or 'password' not in data:
@@ -115,11 +131,35 @@ def token_required(f):
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "Expired"})
 
-        return f(*args, **kwargs)
+        return f(user, *args, **kwargs)
     return decorated
 
 @app.route('/generate-password', methods = ['POST'])
 @token_required
-def generate_password():
+def generate_password(user):
+    data = request.get_json()
+    current_time = datetime.datetime.now()
+    if not data or 'length' not in data or 'service' not in data:
+         return jsonify({"error": "Provide 'length' and 'service'"}), 400
+    
+    length = data['length']
+    input_service = data['service']
+    
+    if not isinstance(length, int) or length < 5:
+         return jsonify({"error": "Length must be a number bigger than 4"}), 400
 
-    return
+    password = pass_gen(length)#passing length to randomizer
+
+    key = load_create_key()#creating or using existing key
+    cipher = Fernet(key)
+    encrypted_password = cipher.encrypt(password.encode())#encrypting password
+
+    new_record = PasswordEntry(service=input_service, 
+                               plain_password=encrypted_password, 
+                               timestamp=current_time,
+                               user_id=user.id)
+    db.session.add(new_record)
+    db.session.commit()
+
+    return jsonify({"status": "success", "Time": current_time.strftime("%Y-%m-%d %H:%M"), "password": password, "service": input_service}), 201
+    
