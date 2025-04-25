@@ -122,8 +122,7 @@ def token_required(f):
         try:
             decoded = jwt.decode(token, 
                                  app.config['SECRET_KEY'], 
-                                 options={"verify_exp": True}, 
-                                 algorithm="HS256")
+                                 algorithms=["HS256"])
 #checking user id            
             user = User.query.get(decoded['public_id'])
             if not user:
@@ -178,7 +177,7 @@ def get_passwords(user):
            decrypted_password = cipher.decrypt(entry.plain_password).decode()#decrypting password      
            passwords.append({
                 "timestamp": entry.timestamp.strftime("%Y-%m-%d %H:%M"),
-                "service": PasswordEntry.service,
+                "service": entry.service,
                 "password": decrypted_password
                 })
     
@@ -186,5 +185,8 @@ def get_passwords(user):
     return jsonify({"Your data": passwords}), 200
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
+
 
