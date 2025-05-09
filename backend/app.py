@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, redirect, url_for
+from flask_cors import CORS
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -13,6 +14,7 @@ import os
 
 #initializing Flask
 app = Flask(__name__)
+CORS(app, origins=["http://127.0.0.1:5500"])
 
 #configuring database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///vault.db'
