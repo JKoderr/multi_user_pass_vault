@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <label for="length">How long your password should be (5-32):</label>
+        <input type="number" id="length" name="length" min="5" max="32" required />
+
+        <label for="service">Which service is this password for:</label>
+        <input type="text" id="service" name="service" placeholder="Gmail" required />
+        
+        <button type="submit">Generate password</button>
+    
+    </form>
+    <p id="errorMsg" style="color: red;"></p>
+
+    <script src="script.js"></script>
+</body>
+</html>
