@@ -1,35 +1,56 @@
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("passGenForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const lengthInput = document.getElementById("length");
+    const serviceInput = document.getElementById("service");
   
-    const length = document.getElementById("length").value;
-    const service = document.getElementById("service").value;
-    const token = localStorage.getItem("token");
+    if (!form || !errorMsg || !lengthInput || !serviceInput) return;
   
-    if (!token) {
-      document.getElementById("errorMsg").textContent = "You are not logged in!";
-      return;
-    }
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
   
-    try {
-      const res = await fetch("http://127.0.0.1:5000/generate-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ length: parseInt(length), service })
-      });
+      const lengthInput = document.getElementById("length");
+      const serviceInput = document.getElementById("service");
+
+        if (
+        !(lengthInput instanceof HTMLInputElement) ||
+        !(serviceInput instanceof HTMLInputElement)
+        ) {
+        console.error("Elementy formularza nie są inputami.");
+        return;
+        }
+
+        const length = parseInt(lengthInput.value);
+        const service = serviceInput.value;
+
+      const token = localStorage.getItem("token");
   
-      const data = await res.json();
-  
-      if (res.ok) {
-        alert(`Your password: ${data.password}`);
-      } else {
-        document.getElementById("errorMsg").textContent = data.error || "Error occurred.";
+      if (!token) {
+        errorMsg.textContent = "You are not logged in!";
+        return;
       }
   
-    } catch (err) {
-      document.getElementById("errorMsg").textContent = "Request failed.";
-    }
+      try {
+        const res = await fetch("http://127.0.0.1:5000/generate-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ length, service })
+        });
+  
+        const data = await res.json();
+  
+        if (res.ok) {
+          alert(`Your password: ${data.password}`);
+        } else {
+          errorMsg.textContent = data.error || "Error occurred.";
+        }
+  
+      } catch (err) {
+        errorMsg.textContent = "Request failed.";
+      }
+    });
   });
   
