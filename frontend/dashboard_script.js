@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!token) {
       errorMsg.textContent = "You are not logged in!";
-      return;
+      window.location.href = "login.html";
     }
 
     try {
@@ -72,8 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
 
       
-
-
       if (!Array.isArray(data["Your data"])) {
         passwordList.textContent = "No passwords found or error occurred.";
         return;
@@ -89,6 +87,16 @@ document.addEventListener("DOMContentLoaded", () => {
       passwordList.textContent = "Failed to load passwords.";
     }
   }
+
+  const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+  });
+}
+
 
   fetchPasswords();
 });
