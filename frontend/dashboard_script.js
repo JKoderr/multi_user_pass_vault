@@ -71,6 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
 
+      if (data.error === "Expired") {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+        return;
+        }
+
       
       if (!Array.isArray(data["Your data"])) {
         passwordList.textContent = "No passwords found or error occurred.";

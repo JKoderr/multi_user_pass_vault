@@ -103,7 +103,7 @@ def login():
         return jsonify({"error": "Provided username or password is not correct"}), 400
 #creating token for logged user
     token = jwt.encode({'public_id': user.id, 
-                        'exp': datetime.datetime.now() + datetime.timedelta(minutes=15)}, 
+                        'exp': int((datetime.datetime.now() + datetime.timedelta(minutes=15)).timestamp())}, 
                         app.config['SECRET_KEY'], 
                         algorithm="HS256")
     return jsonify({"message": "Login successful", "token": token}), 200
@@ -125,6 +125,7 @@ def token_required(f):
             decoded = jwt.decode(token, 
                                  app.config['SECRET_KEY'], 
                                  algorithms=["HS256"])
+    
 #checking user id            
             user = User.query.get(decoded['public_id'])
             if not user:
