@@ -10,14 +10,18 @@
     <h1>Login</h1>
     <form id="passGenForm">
         <label for="length">How long your password should be (5-32):</label>
-        <input type="number" id="length" name="length" min="5" max="32" required />
+        <input type="number" id="length" name="length" min="5" max="32" required /><br>
 
         <label for="service">Which service is this password for:</label>
         <input type="text" id="service" name="service" placeholder="Gmail" required />
         
-        <button type="submit">Generate password</button>
+        <button type="submit">Generate password</button><br>
     
-    </form>
+    </form><br>
+    
+    <h2>Saved passwords</h2>
+    <div id="passwordList"></div>
+    
     <p id="errorMsg" style="color: red;"></p>
 
     <script src="dashboard_script.js"></script>

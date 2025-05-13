@@ -1,56 +1,94 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("passGenForm");
-    const errorMsg = document.getElementById("errorMsg");
-    const lengthInput = document.getElementById("length");
-    const serviceInput = document.getElementById("service");
-  
-    if (!form || !errorMsg || !lengthInput || !serviceInput) return;
-  
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-  
-      const lengthInput = document.getElementById("length");
-      const serviceInput = document.getElementById("service");
+  const form = document.getElementById("passGenForm");
+  const errorMsg = document.getElementById("errorMsg");
+  const lengthInput = document.getElementById("length");
+  const serviceInput = document.getElementById("service");
+  const passwordList = document.getElementById("passwordList");
 
-        if (
-        !(lengthInput instanceof HTMLInputElement) ||
-        !(serviceInput instanceof HTMLInputElement)
-        ) {
-        console.error("Elementy formularza nie są inputami.");
-        return;
-        }
 
-        const length = parseInt(lengthInput.value);
-        const service = serviceInput.value;
-
-      const token = localStorage.getItem("token");
+  if (!form || !errorMsg || !lengthInput || !serviceInput || !passwordList) {
+    console.error("Brakuje któregoś z elementów formularza.");
+    return;
+  }
   
-      if (!token) {
-        errorMsg.textContent = "You are not logged in!";
-        return;
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    if (!(lengthInput instanceof HTMLInputElement) || !(serviceInput instanceof HTMLInputElement)) {
+      alert("Form fields not found or incorrect.");
+      return;
+    }
+
+    const length = parseInt(lengthInput.value);
+    const service = serviceInput.value;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      errorMsg.textContent = "You are not logged in!";
+      return;
+    }
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/generate-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ length, service })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(`Your password: ${data.password}`);
+        fetchPasswords(); //refresh after adding new pass
+      } else {
+        errorMsg.textContent = data.error || "Error occurred.";
       }
-  
-      try {
-        const res = await fetch("http://127.0.0.1:5000/generate-password", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ length, service })
-        });
-  
-        const data = await res.json();
-  
-        if (res.ok) {
-          alert(`Your password: ${data.password}`);
-        } else {
-          errorMsg.textContent = data.error || "Error occurred.";
-        }
-  
-      } catch (err) {
-        errorMsg.textContent = "Request failed.";
-      }
-    });
+    } catch (err) {
+      errorMsg.textContent = "Request failed.";
+    }
   });
-  
+
+  async function fetchPasswords() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    if (!passwordList){
+        console.error("passwordList not found");
+        return;
+      }
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/get-passwords", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      
+
+
+      if (!Array.isArray(data["Your data"])) {
+        passwordList.textContent = "No passwords found or error occurred.";
+        return;
+      }
+
+      passwordList.innerHTML = "";
+      data["Your data"].forEach((entry) => {
+        const item = document.createElement("div");
+        item.textContent = `${entry.service}: ${entry.password} (${entry.timestamp})`;
+        passwordList.appendChild(item);
+      });
+    } catch {
+      passwordList.textContent = "Failed to load passwords.";
+    }
+  }
+
+  fetchPasswords();
+});
