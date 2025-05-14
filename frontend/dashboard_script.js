@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!token) {
       errorMsg.textContent = "You are not logged in!";
-      return;
+      window.location.href = "login.html";
     }
 
     try {
@@ -40,6 +40,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const data = await res.json();
+
+      if (data.error === "Expired") {
+        localStorage.removeItem("token");
+        window.location.replace("http://127.0.0.1:5500/backend_vault/multi_user_pass_vault/frontend/login.html");
+        return;
+      }
 
       if (res.ok) {
         alert(`Your password: ${data.password}`);
@@ -71,9 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
 
+      if (data.error === "Expired") {
+        localStorage.removeItem("token");
+        window.location.replace("http://127.0.0.1:5500/backend_vault/multi_user_pass_vault/frontend/login.html");
+        return;
+        }
+
       
-
-
       if (!Array.isArray(data["Your data"])) {
         passwordList.textContent = "No passwords found or error occurred.";
         return;
@@ -89,6 +99,16 @@ document.addEventListener("DOMContentLoaded", () => {
       passwordList.textContent = "Failed to load passwords.";
     }
   }
+
+  const logoutBtn = document.getElementById("logoutBtn");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("token");
+    window.location.href = "login.html";
+  });
+}
+
 
   fetchPasswords();
 });
