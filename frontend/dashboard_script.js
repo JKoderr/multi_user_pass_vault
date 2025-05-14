@@ -41,6 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await res.json();
 
+      if (data.error === "Expired") {
+        localStorage.removeItem("token");
+        window.location.replace("http://127.0.0.1:5500/backend_vault/multi_user_pass_vault/frontend/login.html");
+        return;
+      }
+
       if (res.ok) {
         alert(`Your password: ${data.password}`);
         fetchPasswords(); //refresh after adding new pass
@@ -73,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (data.error === "Expired") {
         localStorage.removeItem("token");
-        window.location.href = "login.html";
+        window.location.replace("http://127.0.0.1:5500/backend_vault/multi_user_pass_vault/frontend/login.html");
         return;
         }
 

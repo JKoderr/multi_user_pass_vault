@@ -5,8 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from cryptography.fernet import Fernet
-import jwt
+from datetime import datetime, timedelta, timezone
 import datetime
+import jwt
 import random
 import string
 import os
@@ -103,7 +104,7 @@ def login():
         return jsonify({"error": "Provided username or password is not correct"}), 400
 #creating token for logged user
     token = jwt.encode({'public_id': user.id, 
-                        'exp': int((datetime.datetime.now() + datetime.timedelta(minutes=15)).timestamp())}, 
+                        'exp': int((datetime.datetime.now(timezone.utc) + datetime.timedelta(minutes=5)).timestamp())}, 
                         app.config['SECRET_KEY'], 
                         algorithm="HS256")
     return jsonify({"message": "Login successful", "token": token}), 200
