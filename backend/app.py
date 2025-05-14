@@ -180,6 +180,7 @@ def get_passwords(user):
     for entry in entries:    
            decrypted_password = cipher.decrypt(entry.plain_password).decode()#decrypting password      
            passwords.append({
+                "id": entry.id,
                 "timestamp": entry.timestamp.strftime("%Y-%m-%d %H:%M"),
                 "service": entry.service,
                 "password": decrypted_password
