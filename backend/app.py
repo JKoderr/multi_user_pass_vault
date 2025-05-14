@@ -186,6 +186,21 @@ def get_passwords(user):
 
     return jsonify({"Your data": passwords}), 200
 
+    
+#delete password function
+@app.route('/delete-password/<int:entry_id>', methods=['DELETE'])
+@token_required
+def delete_password(user, entry_id):
+    entry_pass = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()
+
+    if not entry_pass:
+        return jsonify({"error": "Unexpected error has occured."}), 404
+    else:
+        db.session.delete(entry_pass)
+        db.session.commit()
+
+    return jsonify({"message": "Success, password has been deleted"}), 200
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
