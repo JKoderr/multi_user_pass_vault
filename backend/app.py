@@ -6,7 +6,6 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from cryptography.fernet import Fernet
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import update
 import datetime
 import jwt
 import random
