@@ -128,10 +128,49 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit Password";
+
+      try{
+        editBtn.addEventListener("click", async () => {
+          const newPassword = prompt("Enter new password:");
+          if (!newPassword) return;
+
+          const token = localStorage.getItem("token");
+          try {
+            const response = await fetch(`http://127.0.0.1:5000/update-password/${entry.id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ password: newPassword })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              alert("Password updated successfully!");
+              fetchPasswords(); // Refresh list
+            } else {
+              alert(result.error || "Update failed.");
+            }
+          } catch {
+            alert("Something went wrong.");
+          }
+        });
+
+      } catch{
+        return
+      }
+
       item.appendChild(text);
       item.appendChild(delBtn);
+      item.appendChild(editBtn)
       passwordList.appendChild(item);
     });
+
+
     } catch {
       passwordList.textContent = "Failed to load passwords.";
     }
