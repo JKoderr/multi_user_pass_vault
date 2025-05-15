@@ -208,18 +208,18 @@ def delete_password(user, entry_id):
 @app.route('/update-password/<int:entry_id>', methods=['PUT'])
 @token_required
 def update_password(user, entry_id):
-    data = request.get_json()
+    data = request.get_json()#take user input
 
-    saved_entry = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()
+    saved_entry = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()#filter passwords
 
     if not data or not saved_entry:
         return jsonify({"error": "Unexpected error has occured."}), 404
     else:
         key = load_create_key()
         cipher = Fernet(key)
-        new_pass = cipher.encrypt(data['password'].encode())
-        saved_entry.plain_password = new_pass
-        db.session.commit()
+        new_pass = cipher.encrypt(data['password'].encode())#encrypting new password
+        saved_entry.plain_password = new_pass#updating password 
+        db.session.commit()#saves session
         
     return jsonify({"message": "Success, password has been updated."}), 200
 
