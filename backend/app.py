@@ -6,6 +6,7 @@ from flask_login import LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from cryptography.fernet import Fernet
 from datetime import datetime, timedelta, timezone
+from sqlalchemy import update
 import datetime
 import jwt
 import random
@@ -194,15 +195,35 @@ def get_passwords(user):
 @app.route('/delete-password/<int:entry_id>', methods=['DELETE'])
 @token_required
 def delete_password(user, entry_id):
-    entry_pass = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()
-
+    entry_pass = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()#filtering passwords
+    #checking if entry is valid and eleting it
     if not entry_pass:
         return jsonify({"error": "Unexpected error has occured."}), 404
     else:
-        db.session.delete(entry_pass)
-        db.session.commit()
+        db.session.delete(entry_pass)#delete entry
+        db.session.commit()#update database
 
     return jsonify({"message": "Success, password has been deleted"}), 200
+
+#update password function
+@app.route('/update-password/<int:entry_id>', methods=['PUT'])
+@token_required
+def update_password(user, entry_id):
+    data = request.get_json()
+
+    saved_entry = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()
+
+    if not data or not saved_entry:
+        return jsonify({"error": "Unexpected error has occured."}), 404
+    else:
+        key = load_create_key()
+        cipher = Fernet(key)
+        new_pass = cipher.encrypt(data['password'].encode())
+        saved_entry.plain_password = new_pass
+        db.session.commit()
+        
+    return jsonify({"message": "Success, password has been updated."}), 200
+
 
 if __name__ == '__main__':
     with app.app_context():
