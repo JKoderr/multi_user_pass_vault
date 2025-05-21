@@ -13,16 +13,16 @@
     <div class="form-container">
         <h1>Generate a password!</h1>
         <form id="passGenForm" class="row g-3">
-            <div class="col-md-6">
+            <div class="row">
                 <label for="length">How long your password should be (5-32):</label>
-                <input type="number" id="length" name="length" min="5" max="32" required />
+                <input type="number" id="length" name="length" min="5" max="32" class="col-sm-2" required />
             </div>
-            <div class="col-md-6">
+            <div class="row">
                 <label for="service">Which service is this password for:</label>
-                <input type="text" id="service" name="service" placeholder="Gmail" required />
+                <input type="text" id="service" name="service" placeholder="Gmail" class="col-md-6" required />
             </div>
 
-            <button type="submit" class="btn btn-primary">Make it for me!</button><br>
+            <button type="submit" class="btn btn-primary col-sm-3">Make it for me!</button><br>
         
         </form><br> 
         <button id="logoutBtn" class="btn btn-danger">Logout</button>

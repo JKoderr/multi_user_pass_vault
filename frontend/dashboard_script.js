@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
       text.textContent = `${entry.service}: ${entry.password} (${entry.timestamp})`;
 
       const delBtn = document.createElement("button");
-      delBtn.textContent = "Delete the password";
+      delBtn.textContent = "Delete";
       delBtn.style.marginLeft = "10px";
 
       delBtn.addEventListener("click", async () => {
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const editBtn = document.createElement("button");
-      editBtn.textContent = "Edit Password";
+      editBtn.textContent = "Edit";
 
       try{
         editBtn.addEventListener("click", async () => {
