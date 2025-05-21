@@ -92,9 +92,85 @@ document.addEventListener("DOMContentLoaded", () => {
       passwordList.innerHTML = "";
       data["Your data"].forEach((entry) => {
         const item = document.createElement("div");
-        item.textContent = `${entry.service}: ${entry.password} (${entry.timestamp})`;
-        passwordList.appendChild(item);
+
+      const text = document.createElement("span");
+      text.textContent = `${entry.service}: ${entry.password} (${entry.timestamp})`;
+
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.style.marginLeft = "10px";
+
+      delBtn.addEventListener("click", async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const confirmed = confirm("Are you sure you want to delete this password?");
+        if (!confirmed) return;
+
+        try {
+          const res = await fetch(`http://127.0.0.1:5000/delete-password/${entry.id}`, {
+            method: "DELETE",
+            headers: {
+              "Authorization": `Bearer ${token}`
+            }
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            alert(result.message);
+            fetchPasswords(); // Odśwież hasła
+          } else {
+            alert(result.error || "Error deleting password.");
+          }
+        } catch {
+          alert("Failed to delete password.");
+        }
       });
+
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+
+      try{
+        editBtn.addEventListener("click", async () => {
+          const newPassword = prompt("Enter new password:");
+          if (!newPassword) return;
+
+          const token = localStorage.getItem("token");
+          try {
+            const response = await fetch(`http://127.0.0.1:5000/update-password/${entry.id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+              },
+              body: JSON.stringify({ password: newPassword })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+              alert("Password updated successfully!");
+              fetchPasswords(); // Refresh list
+            } else {
+              alert(result.error || "Update failed.");
+            }
+          } catch {
+            alert("Something went wrong.");
+          }
+        });
+
+      } catch{
+        return
+      }
+
+      item.appendChild(text);
+      item.appendChild(delBtn);
+      item.appendChild(editBtn)
+      passwordList.appendChild(item);
+    });
+
+
     } catch {
       passwordList.textContent = "Failed to load passwords.";
     }

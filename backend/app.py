@@ -180,6 +180,7 @@ def get_passwords(user):
     for entry in entries:    
            decrypted_password = cipher.decrypt(entry.plain_password).decode()#decrypting password      
            passwords.append({
+                "id": entry.id,
                 "timestamp": entry.timestamp.strftime("%Y-%m-%d %H:%M"),
                 "service": entry.service,
                 "password": decrypted_password
@@ -187,6 +188,41 @@ def get_passwords(user):
     
 
     return jsonify({"Your data": passwords}), 200
+
+    
+#delete password function
+@app.route('/delete-password/<int:entry_id>', methods=['DELETE'])
+@token_required
+def delete_password(user, entry_id):
+    entry_pass = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()#filtering passwords
+    #checking if entry is valid and eleting it
+    if not entry_pass:
+        return jsonify({"error": "Unexpected error has occured."}), 404
+    else:
+        db.session.delete(entry_pass)#delete entry
+        db.session.commit()#update database
+
+    return jsonify({"message": "Success, password has been deleted"}), 200
+
+#update password function
+@app.route('/update-password/<int:entry_id>', methods=['PUT'])
+@token_required
+def update_password(user, entry_id):
+    data = request.get_json()#take user input
+
+    saved_entry = PasswordEntry.query.filter_by(id=entry_id, user_id=user.id).first()#filter passwords
+
+    if not data or not saved_entry:
+        return jsonify({"error": "Unexpected error has occured."}), 404
+    else:
+        key = load_create_key()
+        cipher = Fernet(key)
+        new_pass = cipher.encrypt(data['password'].encode())#encrypting new password
+        saved_entry.plain_password = new_pass#updating password 
+        db.session.commit()#saves session
+        
+    return jsonify({"message": "Success, password has been updated."}), 200
+
 
 if __name__ == '__main__':
     with app.app_context():
